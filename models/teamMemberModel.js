@@ -4,7 +4,7 @@ const teamMemberSchema = new mongoose.Schema({
   firstname: String,
   lastname: String,
   jobTitle: String,
-  email: String,
+  email: { type: String, unique: true },
   password: String,
   tasks: [{ type: mongoose.Schema.Types.ObjectId, ref: "Tasks" }],
 });
