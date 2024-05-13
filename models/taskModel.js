@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const taskSchema = new mongoose.Schema({
-  title: String,
+  title: { type: String, unique: true },
   description: String,
   priority: { type: String, enum: ["Low", "Medium", "High"] },
   deadline: Date,

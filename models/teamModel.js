@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const teamSchema = new mongoose.Schema({
-  name: String,
+  name: { type: String, unique: true },
   creationDate: Date,
   description: String,
   members: [{ type: mongoose.Schema.Types.ObjectId, ref: "TeamMember" }],
