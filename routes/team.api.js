@@ -37,25 +37,28 @@ router.get("/teams", async (req, res, next) => {
 
 // Route pour créer une équipe avec les membres
 router.post("/create", async (req, res, next) => {
-  const { name, creationDate, description, memberIds } = req.body;
+  const { name, creationDate, description, members } = req.body;
 
   try {
     // Récupérer les membres à partir de leurs id
-    const members = await TeamMember.find({ _id: { $in: memberIds } });
+    // const members = await TeamMember.find({ _id: { $in: members } });
 
     const newTeam = new Team({
       name,
       creation_date: creationDate,
       description,
-      members: members.map(member => member._id), 
+      members: members, 
     });
 
     await newTeam.save();
 
-    res.status(201).json({ message: "Team created successfully", team: newTeam });
+    return res.status(201).json({ message: "Team created successfully", team: newTeam });
   } catch (err) {
     console.error(err);
-    res.status(500).send("Sorry, something went wrong with the server");
+    if (err.code == 11000) {
+      return res.status(409).send("Team already exists");
+    }
+    return res.status(500).send("Sorry, something went wrong with the server");
   }
 });
 
