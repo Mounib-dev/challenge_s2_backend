@@ -45,7 +45,7 @@ router.post("/create", async (req, res, next) => {
 
     const newTeam = new Team({
       name,
-      creation_date: creationDate,
+      creationDate,
       description,
       members: members, 
     });
@@ -66,17 +66,14 @@ router.post("/create", async (req, res, next) => {
 // Route pour éditer une équipe
 router.put("/edit/:id", async (req, res, next) => {
   const id = req.params.id;
-  const { name, creationDate, description, type } = req.body;
+  const { name, creationDate, description } = req.body;
 
   const updatedFields = {
     name,
-    creation_date: creationDate,
+    creationDate,
     description,
   };
 
-  if (type) {
-    updatedFields.type = type;
-  }
 
   try {
     const result = await Team.updateOne(
