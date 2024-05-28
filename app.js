@@ -1,3 +1,5 @@
+//Env variables
+require("dotenv").config();
 //Database
 const database = require("./database");
 
@@ -8,6 +10,7 @@ var logger = require("morgan");
 const cors = require("cors");
 
 const indexRouter = require("./routes/index");
+const authRouter = require("./routes/auth.api");
 const taskRouter = require("./routes/tasks.api");
 const teamMembersRouter = require("./routes/teamMembers.api");
 const teamRouter = require("./routes/team.api");
@@ -26,6 +29,7 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use(cors());
 
 app.use("/api/v1", indexRouter);
+app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/tasks", taskRouter);
 app.use("/api/v1/teamMembers", teamMembersRouter);
 app.use("/api/v1/teams", teamRouter);
