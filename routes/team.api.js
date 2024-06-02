@@ -7,23 +7,18 @@ const TeamMember = require("../models/teamMemberModel");
 // Route pour obtenir toutes les équipes
 router.get("/", async (req, res, next) => {
   try {
-    const teams = await Team.find({});
-    console.log(teams);
+    const teams = await Team.find({}).populate("members", "firstname lastname -_id");
     res.status(200).json(teams);
   } catch (err) {
     console.error(err);
-    res
-      .status(500)
-      .send(
-        "Problème interne du serveur, nous nous excusons pour la gêne occasionnée"
-      );
+    res.status(500).send("Problème interne du serveur, nous nous excusons pour la gêne occasionnée");
   }
 });
 
-// Route pour afficher la liste des équipes sans type
+// Route pour afficher la liste des équipes 
 router.get("/teams", async (req, res, next) => {
   try {
-    const teams = await Team.find({ type: { $exists: false } });
+    const teams = await Team.find({ type: { $exists: false } }).populate("members", "firstname lastname -_id");
     if (teams.length > 0) {
       return res.status(200).json(teams);
     }
@@ -33,21 +28,33 @@ router.get("/teams", async (req, res, next) => {
     res.status(500).send("Sorry, something went wrong with the server");
   }
 });
+// Route pour obtenir une équipe par son ID
+router.get("/:id", async (req, res, next) => {
+  try {
+    const teamId = req.params.id;
+    const team = await Team.findById(teamId).populate("members", "firstname lastname -_id");
+    if (team) {
+      res.status(200).json(team);
+    } else {
+      res.status(404).send({ message: "Team not found" });
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Sorry, something went wrong with the server");
+  }
+});
 
 
-// Route pour créer une équipe avec les membres
+// Route pour créer une équipe sans membres
 router.post("/create", async (req, res, next) => {
-  const { name, creationDate, description, members } = req.body;
+  const { name, creationDate, description } = req.body;
 
   try {
-    // Récupérer les membres à partir de leurs id
-    // const members = await TeamMember.find({ _id: { $in: members } });
-
     const newTeam = new Team({
       name,
       creationDate,
       description,
-      members: members, 
+      members: []
     });
 
     await newTeam.save();
@@ -61,29 +68,44 @@ router.post("/create", async (req, res, next) => {
     return res.status(500).send("Sorry, something went wrong with the server");
   }
 });
-
-
 // Route pour éditer une équipe
 router.put("/edit/:id", async (req, res, next) => {
   const id = req.params.id;
-  const { name, creationDate, description } = req.body;
+  const { name, creationDate, description, members } = req.body;
 
   const updatedFields = {
     name,
     creationDate,
     description,
+    members 
   };
 
-
   try {
+    
     const result = await Team.updateOne(
       { _id: new ObjectID(id) },
       {
         $set: updatedFields,
       }
     );
+
     if (result.matchedCount > 0) {
-      res.status(200).send("Team edited");
+   
+      await TeamMember.deleteMany({ teamId: new ObjectID(id) });
+
+      
+      if (members && members.length > 0) {
+        const membersPromises = members.map(async memberId => {
+          const teamMember = new TeamMember({
+            teamId: new ObjectID(id),
+            memberId: new ObjectID(memberId)
+          });
+          await teamMember.save();
+        });
+        await Promise.all(membersPromises);
+      }
+
+      res.status(200).send("Team and members edited successfully");
     } else {
       res.status(404).send("Team not found");
     }
@@ -92,6 +114,8 @@ router.put("/edit/:id", async (req, res, next) => {
     res.status(500).send("Sorry, something went wrong with the server");
   }
 });
+
+
 
 // Route pour supprimer une équipe
 router.delete("/delete/:id", async (req, res, next) => {
