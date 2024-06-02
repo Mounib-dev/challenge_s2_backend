@@ -7,7 +7,7 @@ const auth = async (req, res, next) => {
   console.log(req.header("Authorization"));
   console.log("test?");
 
-  const token = req.header("Authorization").replace("Bearer ", "");
+  const token = req.header("Authorization")?.replace("Bearer ", "");
   if (!token) {
     console.log("test");
     return res.status(401).send({ error: "Access denied" });
