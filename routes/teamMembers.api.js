@@ -1,8 +1,10 @@
 const express = require("express");
 const router = express.Router();
+const mongoose = require("mongoose");
 const ObjectID = require("mongodb").ObjectId;
 const TeamMember = require("../models/teamMemberModel");
 const Task = require("../models/taskModel");
+const Team = require("../models/teamModel");
 const bcrypt = require("bcryptjs");
 const auth = require("../middleware/auth");
 
@@ -42,6 +44,24 @@ router.get("/", auth, async (req, res, next) => {
       return res.status(500).send("Sorry something went wrong with the server");
     }
   }
+
+  if (req.query.available) {
+    console.log(req.query.available);
+    try {
+      const availableEmployees = await TeamMember.find({ teamId: null });
+      if (!availableEmployees) {
+        return res
+          .status(404)
+          .json({ message: "No available team members found" });
+      }
+      return res.status(200).json(availableEmployees);
+    } catch (err) {
+      console.error(err);
+      return res
+        .status(500)
+        .json({ message: "Sorry something went wrong with the server" });
+    }
+  }
 });
 
 router.post("/", async (req, res, next) => {
@@ -62,6 +82,49 @@ router.post("/", async (req, res, next) => {
 });
 
 router.put("/", async (req, res, next) => {
+  //Reference team id to employees who joined a team
+  if (req.query.joinedTeamId) {
+    const teamId = req.query.joinedTeamId;
+    const newTeamMembersIds = req.body.newTeamMembersIds;
+    try {
+      const team = await Team.findById(teamId);
+      if (!team) {
+        return res.status(404).json({ message: "Team not found" });
+      }
+
+      const currentMemberIds = team.members.map((member) => member.toString());
+
+      const removedMemberIds = currentMemberIds.filter(
+        (id) => !newTeamMembersIds.includes(id)
+      );
+
+      const addedMemberIds = newTeamMembersIds.filter(
+        (id) => !currentMemberIds.includes(id)
+      );
+
+      team.members = newTeamMembersIds;
+      await team.save();
+
+      await TeamMember.updateMany(
+        { _id: { $in: removedMemberIds } },
+        { $set: { teamId: null } }
+      );
+
+      await TeamMember.updateMany(
+        { _id: { $in: addedMemberIds } },
+        { $set: { teamId: teamId } }
+      );
+
+      return res.status(200).json({
+        message: "Team updated and members synchronized successfully",
+      });
+    } catch (err) {
+      console.error("Error updating team and synchronizing members:", err);
+      return res.status(500).json({ message: "Internal Server Error" });
+    }
+  }
+
+  //Edit an employee
   const { firstname, lastname, jobTitle, email, password, tasks } = req.body;
   const editedTeamMember = {
     firstname,
