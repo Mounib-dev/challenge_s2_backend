@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const Task = require("../models/taskModel");
 
-// Contrôleur pour créer une nouvelle tâche
+// Create a new task Endpoint
 router.post("/", async (req, res) => {
   try {
     console.log(req.body);
@@ -19,7 +19,7 @@ router.post("/", async (req, res) => {
   }
 });
 
-// Contrôleur pour obtenir toutes les tâches
+// Tasks list Endpoint
 router.get("/", async (req, res) => {
   try {
     const tasks = await Task.find();
@@ -29,7 +29,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-// Contrôleur pour obtenir une tâche par son ID
+// Task by ID Endpoint
 router.get("/:id", async (req, res) => {
   try {
     const task = await Task.findById(req.params.id);
@@ -42,7 +42,7 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// Contrôleur pour mettre à jour une tâche
+// Update task Endpoint
 router.put("/:id", async (req, res) => {
   try {
     const updatedTask = await Task.findByIdAndUpdate(req.params.id, req.body, {
@@ -57,7 +57,7 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-// Contrôleur pour supprimer une tâche
+// Delete task Endpoint
 router.delete("/:id", async (req, res) => {
   try {
     const deletedTask = await Task.findByIdAndDelete(req.params.id);
