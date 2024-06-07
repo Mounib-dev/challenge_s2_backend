@@ -1,14 +1,21 @@
 const express = require("express");
 const router = express.Router();
 const Task = require("../models/taskModel");
+const TeamMember = require("../models/teamMemberModel");
 
 // Create a new task Endpoint
 router.post("/", async (req, res) => {
   try {
-    console.log(req.body);
+    console.log("REQUEST BODY********************", req.body);
     const task = new Task(req.body);
 
     const newTask = await task.save();
+    console.log(newTask._id);
+    //Update the employee tasks array
+    await TeamMember.updateOne({
+      _id: newTask.assignedTo,
+      $addToSet: { tasks: newTask._id },
+    });
     return res.status(201).json(newTask);
   } catch (err) {
     console.error(err);
@@ -47,6 +54,7 @@ router.get("/:id", async (req, res) => {
 
 // Update task Endpoint
 router.put("/:id", async (req, res) => {
+  console.log(req.body);
   try {
     const updatedTask = await Task.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
