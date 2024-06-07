@@ -22,7 +22,10 @@ router.post("/", async (req, res) => {
 // Tasks list Endpoint
 router.get("/", async (req, res) => {
   try {
-    const tasks = await Task.find();
+    const tasks = await Task.find().populate(
+      "assignedTo",
+      "firstname lastname"
+    );
     return res.status(200).json(tasks);
   } catch (err) {
     return res.status(500).json({ message: err.message });
