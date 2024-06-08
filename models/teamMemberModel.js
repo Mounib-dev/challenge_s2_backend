@@ -8,6 +8,7 @@ const teamMemberSchema = new mongoose.Schema({
   email: { type: String, unique: true },
   password: String,
   tasks: [{ type: mongoose.Schema.Types.ObjectId, ref: "Tasks" }],
+  teamId: { type: mongoose.Schema.Types.ObjectId, ref: "Team", default: null },
 });
 
 teamMemberSchema.pre("save", async function (next) {

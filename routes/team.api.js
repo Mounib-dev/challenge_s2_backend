@@ -44,7 +44,7 @@ router.get("/:id", async (req, res, next) => {
     const teamId = req.params.id;
     const team = await Team.findById(teamId).populate(
       "members",
-      "firstname lastname -_id"
+      "firstname lastname"
     );
     if (team) {
       return res.status(200).json(team);
@@ -86,7 +86,6 @@ router.post("/create", async (req, res, next) => {
 router.put("/edit/:id", async (req, res, next) => {
   const id = req.params.id;
   const { name, creationDate, description, members } = req.body;
-
   const updatedFields = {
     name,
     creationDate,
