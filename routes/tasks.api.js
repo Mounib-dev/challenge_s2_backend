@@ -2,21 +2,28 @@ const express = require("express");
 const router = express.Router();
 const Task = require("../models/taskModel");
 const TeamMember = require("../models/teamMemberModel");
+const ObjectID = require("mongodb").ObjectId;
 
 // Create a new task Endpoint
 router.post("/", async (req, res) => {
   try {
-    console.log("REQUEST BODY********************", req.body);
     const task = new Task(req.body);
-
     const newTask = await task.save();
-    console.log(newTask._id);
     //Update the employee tasks array
-    await TeamMember.updateOne({
-      _id: newTask.assignedTo,
-      $addToSet: { tasks: newTask._id },
+    const updatedTeamMember = await TeamMember.findByIdAndUpdate(
+      newTask.assignedTo,
+      {
+        $addToSet: { tasks: newTask._id },
+      }
+    );
+    if (!updatedTeamMember) {
+      return res.status(201).json({
+        message: "Task created but not synchronized with the team member",
+      });
+    }
+    return res.status(201).json({
+      message: `Successefuly created the task and it\'s assigned to ${updatedTeamMember.firstname} ${updatedTeamMember.lastname}`,
     });
-    return res.status(201).json(newTask);
   } catch (err) {
     console.error(err);
     if (err.code === 11000) {
@@ -55,16 +62,71 @@ router.get("/:id", async (req, res) => {
 // Update task Endpoint
 router.put("/:id", async (req, res) => {
   console.log(req.body);
+  const updatedTask = req.body;
   try {
-    const updatedTask = await Task.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-    });
-    if (!updatedTask) {
+    //À terminer demain
+    const taskBeforeUpdate = await Task.findByIdAndUpdate(
+      req.params.id,
+      updatedTask,
+      {
+        new: false,
+      }
+    );
+    if (!taskBeforeUpdate) {
       return res.status(404).json({ message: "Task not found" });
     }
-    return res.status(204).json(updatedTask);
+    console.log(
+      "taskBeforeUpdate ID ********************",
+      taskBeforeUpdate._id
+    );
+    console.log(updatedTask.assignedTo);
+    console.log(updatedTask._id);
+    // const updatedTeamMember = await TeamMember.findByIdAndUpdate(
+    //   newTask.assignedTo,
+    //   {
+    //     $addToSet: { tasks: newTask._id },
+    //   }
+    // );
+    // if (!updatedTeamMember) {
+    //   return res.status(201).json({
+    //     message: "Task created but not synchronized with the team member",
+    //   });
+    // }
+    //Update the employee tasks array
+    //Il faut penser à détecter l'ancien ID de l'autre employé pr lui enlever la tâche
+    //DONC IL FAUT METTRE EN PLACE L'UNICITÉ d'une tâche, qu'elle soit affectable qu'à un et un seul employé
+    const teamMemberBeforeUpdate = await TeamMember.findByIdAndUpdate(
+      updatedTask.assignedTo,
+      { $addToSet: { tasks: updatedTask._id } },
+      { fields: { password: 0 } }
+    );
+    console.log(
+      "teamMemberBeforeUpdate ********************",
+      teamMemberBeforeUpdate
+    );
+
+    const updatedTeamMemberAfterRemovingTask =
+      await TeamMember.findByIdAndUpdate(
+        taskBeforeUpdate.assignedTo,
+        { $pull: { tasks: updatedTask._id } },
+        { new: true, fields: { password: 0 } }
+      );
+    console.log(
+      "updatedTeamMemberAfterRemovingTask **********************",
+      updatedTeamMemberAfterRemovingTask
+    );
+
+    // if (!updatedTeamMemberAfterRemovingTask) {
+    //   return res.status(200).json({
+    //     message: "Task updated but not team members tasks not synced",
+    //   });
+    // }
+    return res.status(201).json({
+      message: `Task updated successfuly and team members tasks synced, ${teamMemberBeforeUpdate.firstname} ${teamMemberBeforeUpdate.lastname} is now the responsible of the task instead of ${updatedTeamMemberAfterRemovingTask.firstname} ${updatedTeamMemberAfterRemovingTask.lastname}`,
+    });
   } catch (err) {
-    return res.status(400).json({ message: err.message });
+    console.error(err);
+    return res.status(500).json({ message: err.message });
   }
 });
 
@@ -72,10 +134,15 @@ router.put("/:id", async (req, res) => {
 router.delete("/:id", async (req, res) => {
   try {
     const deletedTask = await Task.findByIdAndDelete(req.params.id);
+    console.log("DELETED TASK ******************", deletedTask);
     if (!deletedTask) {
       return res.status(404).json({ message: "Task not found" });
     }
-    return res.status(204).json({ message: "Task deleted" });
+    await TeamMember.updateMany(
+      { tasks: deletedTask._id },
+      { $pull: { tasks: deletedTask._id } }
+    );
+    return res.status(204).send();
   } catch (err) {
     return res.status(500).json({ message: err.message });
   }
