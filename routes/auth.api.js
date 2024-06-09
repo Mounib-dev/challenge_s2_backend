@@ -5,8 +5,9 @@ const TeamMember = require("../models/teamMemberModel");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const auth = require("../middleware/auth");
+const { validateLogin } = require("../middleware/validators");
 
-router.post("/login", async (req, res, next) => {
+router.post("/login", validateLogin, async (req, res, next) => {
   const { email, password } = req.body;
   try {
     const teamMember = await TeamMember.findOne({ email });
