@@ -7,6 +7,7 @@ const Task = require("../models/taskModel");
 const Team = require("../models/teamModel");
 const bcrypt = require("bcryptjs");
 const auth = require("../middleware/auth");
+const { validateNewEmployee } = require("../middleware/validators");
 
 router.get("/", auth, async (req, res, next) => {
   console.log("req.query: ", req.query);
@@ -64,7 +65,7 @@ router.get("/", auth, async (req, res, next) => {
   }
 });
 
-router.post("/", async (req, res, next) => {
+router.post("/", validateNewEmployee, async (req, res, next) => {
   const { firstname, lastname, jobTitle, email, password, tasks } = req.body;
   const teamMember = { firstname, lastname, jobTitle, email, password, tasks };
   console.log("Team Member to add: ", teamMember);
