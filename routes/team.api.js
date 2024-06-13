@@ -7,18 +7,17 @@ const TeamMember = require("../models/teamMemberModel");
 // Route pour obtenir toutes les équipes
 router.get("/", async (req, res, next) => {
   try {
-    const teams = await Team.find({}).populate(
+    const teams = await Team.find().populate(
       "members",
-      "firstname lastname -_id"
+      "firstname lastname jobTitle _id"
     );
-    return res.status(200).json(teams);
+    if (teams.length > 0) {
+      return res.status(200).json(teams);
+    }
+    return res.status(400).json({ message: "No teams found" });
   } catch (err) {
     console.error(err);
-    return res
-      .status(500)
-      .send(
-        "Problème interne du serveur, nous nous excusons pour la gêne occasionnée"
-      );
+    return res.status(500).send("Sorry, something went wrong with the server");
   }
 });
 
@@ -27,12 +26,12 @@ router.get("/teams", async (req, res, next) => {
   try {
     const teams = await Team.find({ type: { $exists: false } }).populate(
       "members",
-      "firstname lastname -_id"
+      "firstname lastname _id"
     );
     if (teams.length > 0) {
       return res.status(200).json(teams);
     }
-    return res.status(400).json({ message: "No teams found" });
+    return res.status(404).json({ message: "No teams found" });
   } catch (err) {
     console.error(err);
     return res.status(500).send("Sorry, something went wrong with the server");
