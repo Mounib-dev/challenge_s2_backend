@@ -87,6 +87,17 @@ router.get("/", auth, async (req, res, next) => {
         .json({ message: "Sorry something went wrong with the server" });
     }
   }
+
+  if (req.query.getCount) {
+    try {
+      const employeesCount = await TeamMember.countDocuments();
+      console.log(employeesCount);
+      return res.status(200).json(employeesCount);
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({ message: err.message });
+    }
+  }
 });
 
 router.post("/", validateNewEmployee, async (req, res, next) => {

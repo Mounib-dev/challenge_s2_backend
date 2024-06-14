@@ -35,6 +35,16 @@ router.post("/", async (req, res) => {
 
 // Tasks list Endpoint
 router.get("/", async (req, res) => {
+  if (req.query.getCount) {
+    try {
+      const tasksCount = await Task.countDocuments();
+      console.log(tasksCount);
+      return res.status(200).json(tasksCount);
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({ message: err.message });
+    }
+  }
   try {
     const tasks = await Task.find().populate(
       "assignedTo",
