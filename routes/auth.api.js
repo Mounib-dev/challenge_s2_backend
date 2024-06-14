@@ -38,9 +38,7 @@ router.get("/user", auth, async (req, res, next) => {
     res.json({ user });
   } catch (error) {
     console.error(error);
-    res
-      .status(500)
-      .json({ message: "Erreur lors de la récupération de l'utilisateur" });
+    res.status(500).json({ message: "Error retrieving the user" });
   }
 });
 
