@@ -1,9 +1,10 @@
-var express = require("express");
-var router = express.Router();
+import express from "express";
 
-/* GET home page. */
+const router = express.Router();
+
+/* API Portal */
 router.get("/", function (req, res, next) {
   res.send("Welcome");
 });
 
-module.exports = router;
+export default router;

@@ -1,13 +1,14 @@
-const express = require("express");
+import express from "express";
+import mongoose from "mongoose";
+import { ObjectId as ObjectID } from "mongodb";
+import TeamMember from "../models/teamMemberModel.js";
+import Task from "../models/taskModel.js";
+import Team from "../models/teamModel.js";
+import bcrypt from "bcryptjs";
+import auth from "../middleware/auth.js";
+import { validateNewEmployee } from "../middleware/validators.js";
+
 const router = express.Router();
-const mongoose = require("mongoose");
-const ObjectID = require("mongodb").ObjectId;
-const TeamMember = require("../models/teamMemberModel");
-const Task = require("../models/taskModel");
-const Team = require("../models/teamModel");
-const bcrypt = require("bcryptjs");
-const auth = require("../middleware/auth");
-const { validateNewEmployee } = require("../middleware/validators");
 
 router.get("/", auth, async (req, res, next) => {
   console.log("req.query: ", req.query);
@@ -215,4 +216,4 @@ router.delete("/", async (req, res, next) => {
   }
 });
 
-module.exports = router;
+export default router;

@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const dbName = process.env.DB_NAME || "workloads";
 const uri = `mongodb://127.0.0.1:27017/${dbName}`;
@@ -38,4 +38,6 @@ class Database {
   }
 }
 
-module.exports = new Database();
+// module.exports = new Database();
+const database = new Database();
+export default database;

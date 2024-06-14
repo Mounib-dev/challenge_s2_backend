@@ -1,8 +1,9 @@
-const express = require("express");
+import express from "express";
+import { ObjectId as ObjectID } from "mongodb";
+import Team from "../models/teamModel.js";
+import TeamMember from "../models/teamMemberModel.js";
+
 const router = express.Router();
-const ObjectID = require("mongodb").ObjectId;
-const Team = require("../models/teamModel");
-const TeamMember = require("../models/teamMemberModel");
 
 // Retrieve teams Endpoint
 router.get("/", async (req, res, next) => {
@@ -154,4 +155,4 @@ router.delete("/delete/:id", async (req, res, next) => {
   }
 });
 
-module.exports = router;
+export default router;

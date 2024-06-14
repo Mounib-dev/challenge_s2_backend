@@ -1,6 +1,7 @@
 {
   "name": "challenge-stack-s2-esgi",
   "version": "0.0.0",
+  "type": "module",
   "private": true,
   "scripts": {
     "start": "nodemon ./bin/www",

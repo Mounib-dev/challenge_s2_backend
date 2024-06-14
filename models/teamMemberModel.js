@@ -1,5 +1,5 @@
-const mongoose = require("mongoose");
-const bcrypt = require("bcryptjs");
+import mongoose from "mongoose";
+import bcrypt from "bcryptjs";
 
 const teamMemberSchema = new mongoose.Schema({
   firstname: String,
@@ -22,5 +22,4 @@ teamMemberSchema.pre("save", async function (next) {
 
 const TeamMember = mongoose.model("TeamMember", teamMemberSchema);
 
-module.exports = TeamMember;
-// export default TeamMember;
+export default TeamMember;

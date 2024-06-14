@@ -1,11 +1,12 @@
-const express = require("express");
+import express from "express";
+import { ObjectId as ObjectID } from "mongodb";
+import TeamMember from "../models/teamMemberModel.js";
+import jwt from "jsonwebtoken";
+import bcrypt from "bcryptjs";
+import auth from "../middleware/auth.js";
+import { validateLogin } from "../middleware/validators.js";
+
 const router = express.Router();
-const ObjectID = require("mongodb").ObjectId;
-const TeamMember = require("../models/teamMemberModel");
-const jwt = require("jsonwebtoken");
-const bcrypt = require("bcryptjs");
-const auth = require("../middleware/auth");
-const { validateLogin } = require("../middleware/validators");
 
 router.post("/login", validateLogin, async (req, res, next) => {
   const { email, password } = req.body;
@@ -42,4 +43,4 @@ router.get("/user", auth, async (req, res, next) => {
   }
 });
 
-module.exports = router;
+export default router;

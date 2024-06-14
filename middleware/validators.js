@@ -1,4 +1,4 @@
-const { check, validationResult, body } = require("express-validator");
+import { check, validationResult, body } from "express-validator";
 
 const validateLogin = [
   check("email").isEmail().withMessage("Email must be a valid email address"),
@@ -54,4 +54,4 @@ const validateNewEmployee = [
   },
 ];
 
-module.exports = { validateLogin, validateNewEmployee };
+export { validateLogin, validateNewEmployee };

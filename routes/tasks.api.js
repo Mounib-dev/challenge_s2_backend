@@ -1,8 +1,9 @@
-const express = require("express");
+import express from "express";
+import Task from "../models/taskModel.js";
+import TeamMember from "../models/teamMemberModel.js";
+import { ObjectId as ObjectID } from "mongodb";
+
 const router = express.Router();
-const Task = require("../models/taskModel");
-const TeamMember = require("../models/teamMemberModel");
-const ObjectID = require("mongodb").ObjectId;
 
 // Create a new task Endpoint
 router.post("/", async (req, res) => {
@@ -158,4 +159,4 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

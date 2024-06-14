@@ -1,24 +1,26 @@
-//Env variables
-require("dotenv").config();
-//Database
-const database = require("./database");
+import dotenv from "dotenv";
+dotenv.config();
 
-var express = require("express");
-var path = require("path");
-var cookieParser = require("cookie-parser");
-var logger = require("morgan");
-const cors = require("cors");
+import database from "./database.js";
 
-const indexRouter = require("./routes/index");
-const authRouter = require("./routes/auth.api");
-const taskRouter = require("./routes/tasks.api");
-const teamMembersRouter = require("./routes/teamMembers.api");
-const teamRouter = require("./routes/team.api");
+import express from "express";
+import path from "path";
+import { fileURLToPath } from "url";
+import { dirname, join } from "path";
+import cookieParser from "cookie-parser";
+import logger from "morgan";
+import cors from "cors";
 
-var app = express();
+import indexRouter from "./routes/index.js";
+import authRouter from "./routes/auth.api.js";
+import taskRouter from "./routes/tasks.api.js";
+import teamMembersRouter from "./routes/teamMembers.api.js";
+import teamRouter from "./routes/team.api.js";
 
-const router = require("./routes");
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const app = express();
 
+import router from "./routes/index.js";
 app.use(router);
 
 app.use(logger("dev"));
@@ -34,5 +36,4 @@ app.use("/api/v1/tasks", taskRouter);
 app.use("/api/v1/teamMembers", teamMembersRouter);
 app.use("/api/v1/teams", teamRouter);
 
-
-module.exports = app;
+export default app;

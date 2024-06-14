@@ -1,10 +1,10 @@
-require("../test-setup");
-const request = require("supertest");
-const app = require("../app");
+import "../test-setup.js";
+import request from "supertest";
+import app from "../app.js";
 
-const mongoose = require("mongoose");
-const TeamMember = require("../models/teamMemberModel");
-const jwt = require("jsonwebtoken");
+import mongoose from "mongoose";
+import TeamMember from "../models/teamMemberModel.js";
+import jwt from "jsonwebtoken";
 
 describe("GET /api/v1/teamMembers", () => {
   let token;
