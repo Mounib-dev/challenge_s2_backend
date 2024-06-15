@@ -5,12 +5,13 @@
   "private": true,
   "scripts": {
     "start": "nodemon ./bin/www",
-    "test": "jest"
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
   },
   "jest": {
     "testPathIgnorePatterns": [
       "/node_modules/"
-    ]
+    ],
+    "transform": {}
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
