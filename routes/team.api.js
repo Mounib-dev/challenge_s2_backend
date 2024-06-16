@@ -1,33 +1,26 @@
-const express = require("express");
+import express from "express";
+import { ObjectId as ObjectID } from "mongodb";
+import Team from "../models/teamModel.js";
+import TeamMember from "../models/teamMemberModel.js";
+
 const router = express.Router();
-const ObjectID = require("mongodb").ObjectId;
-const Team = require("../models/teamModel");
-const TeamMember = require("../models/teamMemberModel");
 
-// Route pour obtenir toutes les équipes
+// Retrieve teams Endpoint
 router.get("/", async (req, res, next) => {
-  try {
-    const teams = await Team.find({}).populate(
-      "members",
-      "firstname lastname -_id"
-    );
-    return res.status(200).json(teams);
-  } catch (err) {
-    console.error(err);
-    return res
-      .status(500)
-      .send(
-        "Problème interne du serveur, nous nous excusons pour la gêne occasionnée"
-      );
+  if (req.query.getCount) {
+    try {
+      const teamsCount = await Team.countDocuments();
+      console.log(teamsCount);
+      return res.status(200).json(teamsCount);
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({ message: err.message });
+    }
   }
-});
-
-// Route pour afficher la liste des équipes
-router.get("/teams", async (req, res, next) => {
   try {
-    const teams = await Team.find({ type: { $exists: false } }).populate(
+    const teams = await Team.find().populate(
       "members",
-      "firstname lastname -_id"
+      "firstname lastname jobTitle _id"
     );
     if (teams.length > 0) {
       return res.status(200).json(teams);
@@ -38,6 +31,24 @@ router.get("/teams", async (req, res, next) => {
     return res.status(500).send("Sorry, something went wrong with the server");
   }
 });
+
+// // Route pour afficher la liste des équipes
+// router.get("/teams", async (req, res, next) => {
+//   try {
+//     const teams = await Team.find({ type: { $exists: false } }).populate(
+//       "members",
+//       "firstname lastname _id"
+//     );
+//     if (teams.length > 0) {
+//       return res.status(200).json(teams);
+//     }
+//     return res.status(404).json({ message: "No teams found" });
+//   } catch (err) {
+//     console.error(err);
+//     return res.status(500).send("Sorry, something went wrong with the server");
+//   }
+// });
+
 // Route pour obtenir une équipe par son ID
 router.get("/:id", async (req, res, next) => {
   try {
@@ -144,4 +155,4 @@ router.delete("/delete/:id", async (req, res, next) => {
   }
 });
 
-module.exports = router;
+export default router;

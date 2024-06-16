@@ -1,12 +1,14 @@
-const express = require("express");
+import express from "express";
+import mongoose from "mongoose";
+import { ObjectId as ObjectID } from "mongodb";
+import TeamMember from "../models/teamMemberModel.js";
+import Task from "../models/taskModel.js";
+import Team from "../models/teamModel.js";
+import bcrypt from "bcryptjs";
+import auth from "../middleware/auth.js";
+import { validateNewEmployee } from "../middleware/validators.js";
+
 const router = express.Router();
-const mongoose = require("mongoose");
-const ObjectID = require("mongodb").ObjectId;
-const TeamMember = require("../models/teamMemberModel");
-const Task = require("../models/taskModel");
-const Team = require("../models/teamModel");
-const bcrypt = require("bcryptjs");
-const auth = require("../middleware/auth");
 
 router.get("/", auth, async (req, res, next) => {
   console.log("req.query: ", req.query);
@@ -48,7 +50,10 @@ router.get("/", auth, async (req, res, next) => {
   if (req.query.available) {
     console.log(req.query.available);
     try {
-      const availableEmployees = await TeamMember.find({ teamId: null });
+      const availableEmployees = await TeamMember.find(
+        { teamId: null },
+        { password: 0 }
+      );
       if (!availableEmployees) {
         return res
           .status(404)
@@ -62,9 +67,41 @@ router.get("/", auth, async (req, res, next) => {
         .json({ message: "Sorry something went wrong with the server" });
     }
   }
+
+  if (req.query.withTasksInformation) {
+    console.log(req.query.withTasksInformation);
+    try {
+      const employeesWithTasksInformation = await TeamMember.find(
+        {},
+        { password: 0 }
+      ).populate("tasks", "title priority deadline");
+      if (!employeesWithTasksInformation) {
+        return res.status(404).json({
+          message: "Could not retrieve tasks information from employees",
+        });
+      }
+      return res.status(200).json(employeesWithTasksInformation);
+    } catch (err) {
+      console.error(err);
+      return res
+        .status(500)
+        .json({ message: "Sorry something went wrong with the server" });
+    }
+  }
+
+  if (req.query.getCount) {
+    try {
+      const employeesCount = await TeamMember.countDocuments();
+      console.log(employeesCount);
+      return res.status(200).json(employeesCount);
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({ message: err.message });
+    }
+  }
 });
 
-router.post("/", async (req, res, next) => {
+router.post("/", validateNewEmployee, async (req, res, next) => {
   const { firstname, lastname, jobTitle, email, password, tasks } = req.body;
   const teamMember = { firstname, lastname, jobTitle, email, password, tasks };
   console.log("Team Member to add: ", teamMember);
@@ -179,4 +216,4 @@ router.delete("/", async (req, res, next) => {
   }
 });
 
-module.exports = router;
+export default router;

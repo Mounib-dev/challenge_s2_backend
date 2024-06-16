@@ -1,8 +1,9 @@
-const express = require("express");
+import express from "express";
+import Task from "../models/taskModel.js";
+import TeamMember from "../models/teamMemberModel.js";
+import { ObjectId as ObjectID } from "mongodb";
+
 const router = express.Router();
-const Task = require("../models/taskModel");
-const TeamMember = require("../models/teamMemberModel");
-const ObjectID = require("mongodb").ObjectId;
 
 // Create a new task Endpoint
 router.post("/", async (req, res) => {
@@ -35,6 +36,16 @@ router.post("/", async (req, res) => {
 
 // Tasks list Endpoint
 router.get("/", async (req, res) => {
+  if (req.query.getCount) {
+    try {
+      const tasksCount = await Task.countDocuments();
+      console.log(tasksCount);
+      return res.status(200).json(tasksCount);
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({ message: err.message });
+    }
+  }
   try {
     const tasks = await Task.find().populate(
       "assignedTo",
@@ -148,4 +159,4 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

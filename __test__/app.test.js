@@ -1,10 +1,11 @@
-require("../test-setup");
-const request = require("supertest");
-const app = require("../app");
+import "../test-setup.js";
+import request from "supertest";
+import app from "../app.js";
 
-const mongoose = require("mongoose");
-const TeamMember = require("../models/teamMemberModel");
-const jwt = require("jsonwebtoken");
+import mongoose from "mongoose";
+import TeamMember from "../models/teamMemberModel.js";
+import Task from "../models/taskModel.js";
+import jwt from "jsonwebtoken";
 
 describe("GET /api/v1/teamMembers", () => {
   let token;
@@ -22,11 +23,46 @@ describe("GET /api/v1/teamMembers", () => {
       email: "testuser@dev.io",
       password: "testpassword",
     });
+    const tasks = [
+      {
+        title: "Task 1",
+        priority: "High",
+        deadline: new Date("2024-07-01"),
+        assignedTo: [teamMember._id],
+      },
+      {
+        title: "Task 2",
+        priority: "Medium",
+        deadline: new Date("2024-07-02"),
+        assignedTo: [teamMember._id],
+      },
+      {
+        title: "Task 3",
+        priority: "Low",
+        deadline: new Date("2024-07-03"),
+        assignedTo: [teamMember._id],
+      },
+      {
+        title: "Task 4",
+        priority: "High",
+        deadline: new Date("2024-07-04"),
+        assignedTo: [teamMember._id],
+      },
+      {
+        title: "Task 5",
+        priority: "Medium",
+        deadline: new Date("2024-07-05"),
+        assignedTo: [teamMember._id],
+      },
+    ];
+
+    await Task.create(tasks);
 
     token = jwt.sign({ id: teamMember._id }, process.env.JWT_SECRET);
   });
 
   afterAll(async () => {
+    await Task.deleteMany({});
     await TeamMember.deleteOne({ _id: customId });
   });
 
@@ -87,6 +123,17 @@ describe("GET /api/v1/teamMembers?id=", () => {
     expect(response.statusCode).toBe(200);
     expect(Array.isArray(response.body)).toBe(true);
     expect(response.body.length).toBe(1);
+  });
+
+  it("should respond with an array of employees that have a null team ID", async () => {
+    const response = await request(app)
+      .get("/api/v1/teamMembers?available=true")
+      .set("Authorization", `Bearer ${token}`);
+    expect(response.statusCode).toBe(200);
+    expect(Array.isArray(response.body)).toBe(true);
+    response.body.forEach((employee) => {
+      expect(employee.teamId).toBeNull();
+    });
   });
 });
 

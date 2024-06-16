@@ -1,6 +1,8 @@
-require("dotenv").config();
-const jwt = require("jsonwebtoken");
-const TeamMember = require("../models/teamMemberModel");
+import dotenv from "dotenv";
+dotenv.config();
+
+import jwt from "jsonwebtoken";
+import TeamMember from "../models/teamMemberModel.js";
 const secret = process.env.JWT_SECRET;
 
 const auth = async (req, res, next) => {
@@ -32,4 +34,4 @@ const auth = async (req, res, next) => {
   }
 };
 
-module.exports = auth;
+export default auth;
