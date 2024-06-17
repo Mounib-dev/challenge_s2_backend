@@ -11,7 +11,8 @@ import https from "https";
 import fs from "fs";
 import path from "path";
 
-const { createServer } = http;
+// const { createServer } = http;
+const { createServer } = https;
 const { readFileSync } = fs;
 
 /**
@@ -26,18 +27,18 @@ app.set("port", port);
  */
 
 // Uncomment and adjust paths if using HTTPS
-// const options = {
-//   key: readFileSync("E:/certificates/key.pem"),
-//   cert: readFileSync("E:/certificates/cert.pem"),
-// };
+const options = {
+  key: readFileSync("C:/certificates/key.pem"),
+  cert: readFileSync("C:/certificates/cert.pem"),
+};
 
 /**
  * Create HTTP server.
  */
 
-const server = createServer(app);
+// const server = createServer(app);
 // Uncomment to create HTTPS server
-// const server = https.createServer(options, app);
+const server = https.createServer(options, app);
 
 /**
  * Listen on provided port, on all network interfaces.
