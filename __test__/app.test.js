@@ -172,3 +172,152 @@ describe("POST /api/v1/teamMembers", () => {
     expect(response.text).toBe("The member you try to enter already exists");
   });
 });
+
+
+//task
+
+describe('Task API', () => {
+
+  let token;
+  const customId = new mongoose.Types.ObjectId();
+  let teamMember;
+
+  beforeAll(async () => {
+    // Créer un member pour les tests
+    teamMember = await TeamMember.create({
+      firstname: 'adama',
+      lastname: 'adama',
+      jobTitle: 'dev',
+      email: 'adama@dev.io',
+      password: 'test123',
+    });
+  });
+
+  afterAll(async () => {
+    await Task.deleteMany({});
+    await TeamMember.deleteOne({ _id: customId });
+  });
+
+  describe('POST /api/v1/tasks', () => {
+    it('should create a new task and assign it to a team member', async () => {
+      const newTask = {
+        title: 'Test Task',
+        description: 'Task for testing',
+        assignedTo: teamMember._id,
+      };
+
+      const response = await request(app)
+        .post('/api/v1/tasks')
+        .send(newTask)
+        .expect(201);
+
+      expect(response.body.message).toContain('Successefuly created the task');
+      const task = await Task.findOne({ title: 'Test Task' });
+      expect(task).not.toBeNull();
+      expect(task.assignedTo.toString()).toEqual(teamMember._id.toString());
+    });
+  });
+
+  describe('GET /api/v1/tasks', () => {
+    it('should return a list of tasks', async () => {
+
+
+      const response = await request(app)
+        .get('/api/v1/tasks')
+        .expect(200);
+
+      expect(response.body).toHaveLength(1);
+      expect(response.body[0].title).toEqual('Test Task');
+    });
+
+
+
+    // a regler 
+    //   it('should return the count of tasks when getCount is true', async () => {
+    //     await Task.create({
+    //       title: 'Test Task',
+    //       description: 'Task for testing ',
+    //       assignedTo: teamMember._id,
+    //     });
+    //     await Task.create({
+    //       title: 'Test Task 1',
+    //       description: 'Task for testing 1',
+    //       assignedTo: teamMember._id,
+    //     });
+    //     await Task.create({
+    //       title: 'Test Task 2',
+    //       description: 'Task for testing 2',
+    //       assignedTo: teamMember._id,
+    //     });
+
+    //     const response = await request(app)
+    //       .get('/api/v1/tasks?getCount=true')
+    //       .expect(200);
+
+    //     expect(response.body).toEqual(3);
+    //   });
+    // });
+
+    describe('GET /api/v1/tasks/:id', () => {
+      it('should return a task by ID', async () => {
+        const task = await Task.create({
+          title: 'Test1 Task',
+          description: 'Task for testing',
+          assignedTo: teamMember._id,
+        });
+
+        const response = await request(app)
+          .get(`/api/v1/tasks/${task._id}`)
+          .expect(200);
+
+        expect(response.body.title).toEqual('Test1 Task');
+      });
+    });
+
+
+
+    // a regler
+    // describe('PUT /api/v1/tasks/:id', () => {
+    //   it('should update a task', async () => {
+    //     const task = await Task.create({
+    //       title: 'Test1 Task',
+    //       description: 'Task for testing',
+    //       assignedTo: teamMember._id,
+    //     });
+
+    //     const updatedTask = {
+    //       title: 'Updated Task',
+    //       description: 'Updated description',
+    //       assignedTo: teamMember._id,
+    //     };
+
+    //     const response = await request(app)
+    //       .put(`/api/v1/tasks/${task._id}`)
+    //       .send(updatedTask)
+    //       .expect(201);
+
+    //     expect(response.body.message).toContain('Task updated successfuly');
+    //     const taskAfterUpdate = await Task.findById(task._id);
+    //     expect(taskAfterUpdate.title).toEqual('Updated Task');
+    //     expect(taskAfterUpdate.description).toEqual('Updated description');
+
+    //   });
+    // });
+
+    describe('DELETE /api/v1/tasks/:id', () => {
+      it('should delete a task', async () => {
+        const task = await Task.create({
+          title: 'Test Task 1',
+          description: 'Task for testing',
+          assignedTo: teamMember._id,
+        });
+
+        await request(app)
+          .delete(`/api/v1/tasks/${task._id}`)
+          .expect(204);
+
+        const deletedTask = await Task.findById(task._id);
+        expect(deletedTask).toBeNull();
+      });
+    });
+  });
