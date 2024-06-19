@@ -276,80 +276,80 @@ describe("Tasks API", () => {
 // /// TESTING TEAMS API
 
 // */
-// describe("Teams API", () => {
-//   let token;
-//   const customId = new mongoose.Types.ObjectId();
-//   let teamMember;
+describe("Teams API", () => {
+  let token;
+  const customId = new mongoose.Types.ObjectId();
+  let teamMember;
 
-//   beforeAll(async () => {
-//     await mongoose.connect(`mongodb://127.0.0.1:27017/${process.env.DB_NAME}`, {
-//       useNewUrlParser: true,
-//       useUnifiedTopology: true,
-//     });
+  beforeAll(async () => {
+    await mongoose.connect(`mongodb://127.0.0.1:27017/${process.env.DB_NAME}`, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
 
-//     teamMember = await TeamMember.create({
-//       _id: customId,
-//       email: "testuser@dev.io",
-//       password: "testpassword",
-//     });
-//     const teams = [
-//       {
-//         name: "Team 1",
-//         creationDate: new Date("2024-07-01"),
-//         description: "Team 1 description",
-//       },
-//       {
-//         name: "Team 2",
-//         creationDate: new Date("2024-07-02"),
-//         description: "Team 2 description",
-//       },
-//     ];
+    teamMember = await TeamMember.create({
+      _id: customId,
+      email: "testuser@dev.io",
+      password: "testpassword",
+    });
+    const teams = [
+      {
+        name: "Team 1",
+        creationDate: new Date("2024-07-01"),
+        description: "Team 1 description",
+      },
+      {
+        name: "Team 2",
+        creationDate: new Date("2024-07-02"),
+        description: "Team 2 description",
+      },
+    ];
 
-//     await Team.create(teams);
+    await Team.create(teams);
 
-//     token = jwt.sign({ id: teamMember._id }, process.env.JWT_SECRET);
-//   });
+    token = jwt.sign({ id: teamMember._id }, process.env.JWT_SECRET);
+  });
 
-//   afterAll(async () => {
-//     await Team.deleteMany({});
-//     await TeamMember.deleteOne({ _id: customId });
-//   });
+  afterAll(async () => {
+    await Team.deleteMany({});
+    await TeamMember.deleteOne({ _id: customId });
+  });
 
-//   it("should create a new team", async () => {
-//     const newTeam = {
-//       name: "Team 3",
-//       creationDate: new Date("2024-07-03"),
-//       description: "Team 3 description",
-//     };
+  it("should create a new team", async () => {
+    const newTeam = {
+      name: "Team 3",
+      creationDate: new Date("2024-07-03"),
+      description: "Team 3 description",
+    };
 
-//     const response = await request(app)
-//       .post("/api/v1/teams/create")
-//       .set("Authorization", `Bearer ${token}`)
-//       .send(newTeam)
-//       .expect(201);
-//     console.log(response);
-//     expect(response.body.message).toContain("Team created successfully");
-//     const team = await Team.findOne({ name: "Team 3" });
-//     expect(team).not.toBeNull();
-//     expect(team._id.toString()).toEqual(response.body.team._id.toString());
-//   });
+    const response = await request(app)
+      .post("/api/v1/teams/create")
+      .set("Authorization", `Bearer ${token}`)
+      .send(newTeam)
+      .expect(201);
+    console.log(response);
+    expect(response.body.message).toContain("Team created successfully");
+    const team = await Team.findOne({ name: "Team 3" });
+    expect(team).not.toBeNull();
+    expect(team._id.toString()).toEqual(response.body.team._id.toString());
+  });
 
-//   it("should return a list of teams", async () => {
-//     const response = await request(app)
-//       .get("/api/v1/teams")
-//       .set("Authorization", `Bearer ${token}`)
-//       .expect(200);
+  it("should return a list of teams", async () => {
+    const response = await request(app)
+      .get("/api/v1/teams")
+      .set("Authorization", `Bearer ${token}`)
+      .expect(200);
 
-//     expect(response.body).toHaveLength(3);
-//     expect(response.body[0].name).toEqual("Team 1");
-//   });
+    expect(response.body).toHaveLength(3);
+    expect(response.body[0].name).toEqual("Team 1");
+  });
 
-//   it("should return the count of teams when getCount is true", async () => {
-//     const response = await request(app)
-//       .get("/api/v1/teams?getCount=true")
-//       .set("Authorization", `Bearer ${token}`)
-//       .expect(200);
+  it("should return the count of teams when getCount is true", async () => {
+    const response = await request(app)
+      .get("/api/v1/teams?getCount=true")
+      .set("Authorization", `Bearer ${token}`)
+      .expect(200);
 
-//     expect(response.body).toEqual(3);
-//   });
-// });
+    expect(response.body).toEqual(3);
+  });
+});
