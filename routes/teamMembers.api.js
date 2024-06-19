@@ -74,7 +74,7 @@ router.get("/", auth, async (req, res, next) => {
       const employeesWithTasksInformation = await TeamMember.find(
         {},
         { password: 0 }
-      ).populate("tasks", "title priority deadline");
+      ).populate("tasks", "title priority deadline description");
       if (!employeesWithTasksInformation) {
         return res.status(404).json({
           message: "Could not retrieve tasks information from employees",
