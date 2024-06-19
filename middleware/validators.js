@@ -6,10 +6,9 @@ const validateLogin = [
     if (typeof value !== "string") {
       throw new Error("Password must be a string");
     }
-    // Protection from common SQL injections
-    const sqlInjectionPattern =
-      /(\b(SELECT|INSERT|UPDATE|DELETE|DROP|ALTER|CREATE)\b|--|;|\/\*)/i;
-    if (sqlInjectionPattern.test(value)) {
+
+    const noSqlInjectionPattern = /(\$|\{|\}|\[|\])/g;
+    if (noSqlInjectionPattern.test(value)) {
       throw new Error("Password contains forbidden characters or patterns");
     }
     return true;
