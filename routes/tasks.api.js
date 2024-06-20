@@ -1,12 +1,13 @@
 import express from "express";
 import Task from "../models/taskModel.js";
 import TeamMember from "../models/teamMemberModel.js";
+import auth from "../middleware/auth.js";
 import { ObjectId as ObjectID } from "mongodb";
 
 const router = express.Router();
 
 // Create a new task Endpoint
-router.post("/", async (req, res) => {
+router.post("/", auth, async (req, res) => {
   try {
     const task = new Task(req.body);
     const newTask = await task.save();
@@ -35,7 +36,7 @@ router.post("/", async (req, res) => {
 });
 
 // Tasks list Endpoint
-router.get("/", async (req, res) => {
+router.get("/", auth, async (req, res) => {
   if (req.query.getCount) {
     try {
       const tasksCount = await Task.countDocuments();
@@ -58,7 +59,7 @@ router.get("/", async (req, res) => {
 });
 
 // Task by ID Endpoint
-router.get("/:id", async (req, res) => {
+router.get("/:id", auth, async (req, res) => {
   try {
     const task = await Task.findById(req.params.id);
     if (!task) {
@@ -71,7 +72,7 @@ router.get("/:id", async (req, res) => {
 });
 
 // Update task Endpoint
-router.put("/:id", async (req, res) => {
+router.put("/:id", auth, async (req, res) => {
   console.log(req.body);
   const updatedTask = req.body;
   try {
@@ -142,7 +143,7 @@ router.put("/:id", async (req, res) => {
 });
 
 // Delete task Endpoint
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", auth, async (req, res) => {
   try {
     const deletedTask = await Task.findByIdAndDelete(req.params.id);
     console.log("DELETED TASK ******************", deletedTask);

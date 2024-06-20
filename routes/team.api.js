@@ -1,12 +1,13 @@
 import express from "express";
 import { ObjectId as ObjectID } from "mongodb";
 import Team from "../models/teamModel.js";
+import auth from "../middleware/auth.js";
 import TeamMember from "../models/teamMemberModel.js";
 
 const router = express.Router();
 
 // Retrieve teams Endpoint
-router.get("/", async (req, res, next) => {
+router.get("/", auth, async (req, res, next) => {
   if (req.query.getCount) {
     try {
       const teamsCount = await Team.countDocuments();
@@ -32,25 +33,8 @@ router.get("/", async (req, res, next) => {
   }
 });
 
-// // Route pour afficher la liste des équipes
-// router.get("/teams", async (req, res, next) => {
-//   try {
-//     const teams = await Team.find({ type: { $exists: false } }).populate(
-//       "members",
-//       "firstname lastname _id"
-//     );
-//     if (teams.length > 0) {
-//       return res.status(200).json(teams);
-//     }
-//     return res.status(404).json({ message: "No teams found" });
-//   } catch (err) {
-//     console.error(err);
-//     return res.status(500).send("Sorry, something went wrong with the server");
-//   }
-// });
-
 // Route pour obtenir une équipe par son ID
-router.get("/:id", async (req, res, next) => {
+router.get("/:id", auth, async (req, res, next) => {
   try {
     const teamId = req.params.id;
     const team = await Team.findById(teamId).populate(
@@ -69,7 +53,7 @@ router.get("/:id", async (req, res, next) => {
 });
 
 // Route pour créer une équipe sans membres
-router.post("/create", async (req, res, next) => {
+router.post("/create", auth, async (req, res, next) => {
   const { name, creationDate, description } = req.body;
 
   try {
@@ -94,7 +78,7 @@ router.post("/create", async (req, res, next) => {
   }
 });
 // Route pour éditer une équipe
-router.put("/edit/:id", async (req, res, next) => {
+router.put("/edit/:id", auth, async (req, res, next) => {
   const id = req.params.id;
   const { name, creationDate, description, members } = req.body;
   const updatedFields = {
@@ -112,25 +96,6 @@ router.put("/edit/:id", async (req, res, next) => {
       }
     );
 
-    // if (result.matchedCount > 0) {
-
-    //   await TeamMember.deleteMany({ teamId: new ObjectID(id) });
-
-    //   if (members && members.length > 0) {
-    //     const membersPromises = members.map(async memberId => {
-    //       const teamMember = new TeamMember({
-    //         teamId: new ObjectID(id),
-    //         memberId: new ObjectID(memberId)
-    //       });
-    //       await teamMember.save();
-    //     });
-    //     await Promise.all(membersPromises);
-    //   }
-
-    //   res.status(200).send("Team and members edited successfully");
-    // } else {
-    //   res.status(404).send("Team not found");
-    // }
     return res.status(204).send("Team successefuly edited");
   } catch (err) {
     console.error(err);
@@ -139,7 +104,7 @@ router.put("/edit/:id", async (req, res, next) => {
 });
 
 // Route pour supprimer une équipe
-router.delete("/delete/:id", async (req, res, next) => {
+router.delete("/delete/:id", auth, async (req, res, next) => {
   const id = req.params.id;
 
   try {

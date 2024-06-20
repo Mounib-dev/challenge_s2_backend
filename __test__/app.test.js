@@ -8,6 +8,11 @@ import Task from "../models/taskModel.js";
 import Team from "../models/teamModel.js";
 import jwt from "jsonwebtoken";
 
+/* 
+
+/// TESTING TEAM MEMBERS API
+
+*/
 describe("Team Members API", () => {
   let token;
   const customId = new mongoose.Types.ObjectId();
@@ -24,40 +29,6 @@ describe("Team Members API", () => {
       email: "testuser@dev.io",
       password: "testpassword",
     });
-    // const tasks = [
-    //   {
-    //     title: "Task 1",
-    //     priority: "High",
-    //     deadline: new Date("2024-07-01"),
-    //     assignedTo: [teamMember._id],
-    //   },
-    //   {
-    //     title: "Task 2",
-    //     priority: "Medium",
-    //     deadline: new Date("2024-07-02"),
-    //     assignedTo: [teamMember._id],
-    //   },
-    //   {
-    //     title: "Task 3",
-    //     priority: "Low",
-    //     deadline: new Date("2024-07-03"),
-    //     assignedTo: [teamMember._id],
-    //   },
-    //   {
-    //     title: "Task 4",
-    //     priority: "High",
-    //     deadline: new Date("2024-07-04"),
-    //     assignedTo: [teamMember._id],
-    //   },
-    //   {
-    //     title: "Task 5",
-    //     priority: "Medium",
-    //     deadline: new Date("2024-07-05"),
-    //     assignedTo: [teamMember._id],
-    //   },
-    // ];
-
-    // await Task.create(tasks);
 
     token = jwt.sign({ id: teamMember._id }, process.env.JWT_SECRET);
   });
@@ -68,7 +39,6 @@ describe("Team Members API", () => {
   });
 
   it("should respond with an array of employees", async () => {
-    console.log(token);
     const response = await request(app)
       .get("/api/v1/teamMembers")
       .set("Authorization", `Bearer ${token}`);
@@ -78,7 +48,6 @@ describe("Team Members API", () => {
   });
 
   it("should respond with an object containing one employee with the given ID in the url's param", async () => {
-    console.log(token);
     const response = await request(app)
       .get(`/api/v1/teamMembers?id=${customId}`)
       .set("Authorization", `Bearer ${token}`);
@@ -136,9 +105,7 @@ describe("GET /api/v1/teamMembers?id=", () => {
       expect(employee.teamId).toBeNull();
     });
   });
-});
 
-describe("POST /api/v1/teamMembers", () => {
   it("should add a new employee to the database", async () => {
     const newEmployee = {
       firstname: "Mounib",
@@ -150,6 +117,7 @@ describe("POST /api/v1/teamMembers", () => {
     };
     const response = await request(app)
       .post("/api/v1/teamMembers")
+      .set("Authorization", `Bearer ${token}`)
       .send(newEmployee);
 
     expect(response.statusCode).toBe(201);
@@ -167,22 +135,25 @@ describe("POST /api/v1/teamMembers", () => {
     };
     const response = await request(app)
       .post("/api/v1/teamMembers")
+      .set("Authorization", `Bearer ${token}`)
       .send(newEmployee);
 
     expect(response.statusCode).toBe(409);
     expect(response.text).toBe("The member you try to enter already exists");
   });
 });
+/* 
 
-//task
+/// TESTING Tasks API
 
-describe("Task API", () => {
+*/
+
+describe("Tasks API", () => {
   let token;
   const customId = new mongoose.Types.ObjectId();
   let teamMember;
 
   beforeAll(async () => {
-    // Créer un member pour les tests
     teamMember = await TeamMember.create({
       firstname: "adama",
       lastname: "adama",
@@ -190,6 +161,7 @@ describe("Task API", () => {
       email: "adama@dev.io",
       password: "test123",
     });
+    token = jwt.sign({ id: teamMember._id }, process.env.JWT_SECRET);
   });
 
   afterAll(async () => {
@@ -197,110 +169,114 @@ describe("Task API", () => {
     await TeamMember.deleteOne({ _id: customId });
   });
 
-  describe("POST /api/v1/tasks", () => {
-    it("should create a new task and assign it to a team member", async () => {
-      const newTask = {
-        title: "Test Task 1",
-        description: "Task for testing",
-        assignedTo: teamMember._id,
-      };
+  it("should create a new task and assign it to a team member", async () => {
+    const newTask = {
+      title: "Test Task 1",
+      description: "Task for testing",
+      assignedTo: teamMember._id,
+    };
 
-      const response = await request(app)
-        .post("/api/v1/tasks")
-        .send(newTask)
-        .expect(201);
+    const response = await request(app)
+      .post("/api/v1/tasks")
+      .set("Authorization", `Bearer ${token}`)
+      .send(newTask)
+      .expect(201);
 
-      expect(response.body.message).toContain("Successefuly created the task");
-      const task = await Task.findOne({ title: "Test Task 1" });
-      expect(task).not.toBeNull();
-      expect(task.assignedTo.toString()).toEqual(teamMember._id.toString());
-    });
+    expect(response.body.message).toContain("Successefuly created the task");
+    const task = await Task.findOne({ title: "Test Task 1" });
+    expect(task).not.toBeNull();
+    expect(task.assignedTo.toString()).toEqual(teamMember._id.toString());
   });
 
-  describe("GET /api/v1/tasks", () => {
-    it("should return a list of tasks", async () => {
-      const response = await request(app).get("/api/v1/tasks").expect(200);
+  it("should return a list of tasks", async () => {
+    const response = await request(app)
+      .get("/api/v1/tasks")
+      .set("Authorization", `Bearer ${token}`)
+      .expect(200);
 
-      expect(response.body).toHaveLength(1);
-      expect(response.body[0].title).toEqual("Test Task 1");
-    });
-
-    it("should return the count of tasks when getCount is true", async () => {
-      await Task.create({
-        title: "Test Task 2",
-        description: "Task for testing ",
-        assignedTo: teamMember._id,
-      });
-      await Task.create({
-        title: "Test Task 3",
-        description: "Task for testing 1",
-        assignedTo: teamMember._id,
-      });
-      await Task.create({
-        title: "Test Task 4",
-        description: "Task for testing 2",
-        assignedTo: teamMember._id,
-      });
-
-      const response = await request(app)
-        .get("/api/v1/tasks?getCount=true")
-        .expect(200);
-
-      expect(response.body).toEqual(4);
-    });
+    expect(response.body).toHaveLength(1);
+    expect(response.body[0].title).toEqual("Test Task 1");
   });
 
-  describe("GET /api/v1/tasks/:id", () => {
-    it("should return a task by ID", async () => {
-      const task = await Task.create({
-        title: "Test1 Task",
-        description: "Task for testing",
-        assignedTo: teamMember._id,
-      });
-
-      const response = await request(app)
-        .get(`/api/v1/tasks/${task._id}`)
-        .expect(200);
-
-      expect(response.body.title).toEqual("Test1 Task");
+  it("should return the count of tasks when getCount is true", async () => {
+    await Task.create({
+      title: "Test Task 2",
+      description: "Task for testing ",
+      assignedTo: teamMember._id,
     });
+    await Task.create({
+      title: "Test Task 3",
+      description: "Task for testing 1",
+      assignedTo: teamMember._id,
+    });
+    await Task.create({
+      title: "Test Task 4",
+      description: "Task for testing 2",
+      assignedTo: teamMember._id,
+    });
+
+    const response = await request(app)
+      .get("/api/v1/tasks?getCount=true")
+      .set("Authorization", `Bearer ${token}`)
+      .expect(200);
+
+    expect(response.body).toEqual(4);
   });
 
-  describe("PUT /api/v1/tasks/:id", () => {
-    it("should update a task", async () => {
-      const task = await Task.findOne({ title: "Test1 Task" });
-
-      const updatedTask = {
-        title: "Updated Task",
-        description: "Updated description",
-        assignedTo: teamMember._id,
-      };
-
-      const response = await request(app)
-        .put(`/api/v1/tasks/${task._id}`)
-        .send(updatedTask)
-        .expect(201);
-
-      expect(response.body.message).toContain("Task updated successfuly");
-      const taskAfterUpdate = await Task.findById(task._id);
-      expect(taskAfterUpdate.title).toEqual("Updated Task");
-      expect(taskAfterUpdate.description).toEqual("Updated description");
+  it("should return a task by ID", async () => {
+    const task = await Task.create({
+      title: "Test1 Task",
+      description: "Task for testing",
+      assignedTo: teamMember._id,
     });
+
+    const response = await request(app)
+      .get(`/api/v1/tasks/${task._id}`)
+      .set("Authorization", `Bearer ${token}`)
+      .expect(200);
+
+    expect(response.body.title).toEqual("Test1 Task");
   });
 
-  describe("DELETE /api/v1/tasks/:id", () => {
-    it("should delete a task", async () => {
-      const task = await Task.findOne({ title: "Updated Task" });
+  it("should update a task", async () => {
+    const task = await Task.findOne({ title: "Test1 Task" });
 
-      await request(app).delete(`/api/v1/tasks/${task._id}`).expect(204);
+    const updatedTask = {
+      title: "Updated Task",
+      description: "Updated description",
+      assignedTo: teamMember._id,
+    };
 
-      const deletedTask = await Task.findById(task._id);
-      expect(deletedTask).toBeNull();
-    });
+    const response = await request(app)
+      .put(`/api/v1/tasks/${task._id}`)
+      .set("Authorization", `Bearer ${token}`)
+      .send(updatedTask)
+      .expect(201);
+
+    expect(response.body.message).toContain("Task updated successfuly");
+    const taskAfterUpdate = await Task.findById(task._id);
+    expect(taskAfterUpdate.title).toEqual("Updated Task");
+    expect(taskAfterUpdate.description).toEqual("Updated description");
+  });
+
+  it("should delete a task", async () => {
+    const task = await Task.findOne({ title: "Updated Task" });
+
+    await request(app)
+      .delete(`/api/v1/tasks/${task._id}`)
+      .set("Authorization", `Bearer ${token}`)
+      .expect(204);
+
+    const deletedTask = await Task.findById(task._id);
+    expect(deletedTask).toBeNull();
   });
 });
+// /*
 
-describe("Team Members API", () => {
+// /// TESTING TEAMS API
+
+// */
+describe("Teams API", () => {
   let token;
   const customId = new mongoose.Types.ObjectId();
   let teamMember;

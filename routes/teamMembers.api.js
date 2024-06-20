@@ -74,7 +74,7 @@ router.get("/", auth, async (req, res, next) => {
       const employeesWithTasksInformation = await TeamMember.find(
         {},
         { password: 0 }
-      ).populate("tasks", "title priority deadline");
+      ).populate("tasks", "title priority deadline description");
       if (!employeesWithTasksInformation) {
         return res.status(404).json({
           message: "Could not retrieve tasks information from employees",
@@ -101,7 +101,7 @@ router.get("/", auth, async (req, res, next) => {
   }
 });
 
-router.post("/", validateNewEmployee, async (req, res, next) => {
+router.post("/", auth, validateNewEmployee, async (req, res, next) => {
   const { firstname, lastname, jobTitle, email, password, tasks } = req.body;
   const teamMember = { firstname, lastname, jobTitle, email, password, tasks };
   console.log("Team Member to add: ", teamMember);
@@ -118,7 +118,7 @@ router.post("/", validateNewEmployee, async (req, res, next) => {
   }
 });
 
-router.put("/", async (req, res, next) => {
+router.put("/", auth, async (req, res, next) => {
   //Reference team id to employees who joined a team
   if (req.query.joinedTeamId) {
     const teamId = req.query.joinedTeamId;
@@ -203,7 +203,7 @@ router.put("/", async (req, res, next) => {
   return res.status(500).send("Sorry, server encountered an error");
 });
 
-router.delete("/", async (req, res, next) => {
+router.delete("/", auth, async (req, res, next) => {
   const id = req.query.id;
   try {
     await TeamMember.deleteOne({

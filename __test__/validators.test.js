@@ -23,10 +23,10 @@ describe("validateLogin middleware", () => {
     );
   });
 
-  test("should fail if password contains SQL injection pattern", async () => {
+  test("should fail if password contains NoSQL injection pattern", async () => {
     const response = await request(app)
       .post("/login")
-      .send({ email: "test@example.com", password: "DROP TABLE users;" });
+      .send({ email: "test@example.com", password: "db.users.find({});" });
 
     expect(response.status).toBe(400);
     expect(response.body.errors).toEqual(
